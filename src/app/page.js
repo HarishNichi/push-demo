@@ -63,6 +63,21 @@ export default function HomePage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
+    const isSafariBrowser = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    setIsSafari(isSafariBrowser);
+
+    if (isSafariBrowser) {
+      onMessage(messaging, (payload) => {
+        setIncoming(payload.notification);
+      });
+    }
+  }, []);
+
   // Manual permission + token save for Safari
   const handleSafariPermission = async () => {
     const permission = await Notification.requestPermission();
