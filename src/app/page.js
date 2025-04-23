@@ -25,6 +25,7 @@ export default function HomePage() {
     if (isSafari) {
       // Safari doesn't use service workers for Firebase push notifications
       console.log('Safari detected. Custom push notification handling needed.');
+      console.log(Notification.permission);
       // Handle Safari's push notifications manually, or use APNs directly
     } else {
       // For other browsers (Chrome, Firefox, etc.)
