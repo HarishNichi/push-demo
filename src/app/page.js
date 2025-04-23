@@ -9,6 +9,7 @@ export default function HomePage() {
   const [incoming, setIncoming] = useState(null);
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState('');
+  const [isSafari, setIsSafari] = useState(false);
 
   // Your authorization token for API requests
   const AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvYWRtaW4vbG9naW4iLCJpYXQiOjE3NDU0MDQzMDcsImV4cCI6MTc0NTQ5MDcwNywibmJmIjoxNzQ1NDA0MzA3LCJqdGkiOiJHRHdsUDJ5dHBydjQwZkhuIiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.Gu5-UJTqyg3Brh6C--d_IKJWzpGSgX5rjPBdJ2Gw7xc";  // Replace with your actual auth token
@@ -16,36 +17,30 @@ export default function HomePage() {
 
   const API_URL = "https://efa3-119-82-104-94.ngrok-free.app";  // Replace with your actual API URL
 
+  
+  const firebaseConfig = {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  };
+
+
+
+  // Detect Safari
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Detect if the browser is Safari
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
+    const isSafariBrowser = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    setIsSafari(isSafariBrowser);
 
-    if (isSafari) {
-      // Safari doesn't use service workers for Firebase push notifications
-      console.log('Safari detected. Custom push notification handling needed.');
-      console.log(Notification.permission);
-      Notification.requestPermission()
-      // Handle Safari's push notifications manually, or use APNs directly
-    } else {
-      // For other browsers (Chrome, Firefox, etc.)
-      Notification.requestPermission();
-
-      const firebaseConfig = {
-        apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-        authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-        messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-        appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-        measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-      };
-
-      const app = initializeApp(firebaseConfig);
-      const messaging = getMessaging(app);
-
-      // Register SW, request permission & get token
+    if (!isSafariBrowser) {
+      // Normal FCM logic for Chrome, Firefox, etc.
       navigator.serviceWorker
         .register('/firebase-messaging-sw.js')
         .then((registration) => {
@@ -54,49 +49,63 @@ export default function HomePage() {
               getToken(messaging, {
                 vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY,
                 serviceWorkerRegistration: registration,
-              })
-                .then((token) => {
-                  if (token) {
-                    setFcmToken(token);
-                    // Send the token to the backend
-                    fetch(`${API_URL}/api/auth/save-token`, {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${AUTH_TOKEN}`,
-                      },
-                      body: JSON.stringify({ token }),
-                    })
-                      .then((response) => response.json())
-                      .then((data) => {
-                        console.log('Token saved:', data);
-                      })
-                      .catch((error) => {
-                        console.error('Error saving token:', error);
-                      });
-                  }
-                })
-                .catch(console.error);
+              }).then((token) => {
+                setFcmToken(token);
+                saveTokenToServer(token);
+              });
             }
           });
-        })
-        .catch(console.error);
+        });
 
-      // Listen for foreground messages
       onMessage(messaging, (payload) => {
         setIncoming(payload.notification);
       });
     }
   }, []);
 
-  // Function to send a broadcast notification
+  // Manual permission + token save for Safari
+  const handleSafariPermission = async () => {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      try {
+        const token = await getToken(messaging, {
+          vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY,
+        });
+        setFcmToken(token);
+        saveTokenToServer(token);
+      } catch (err) {
+        console.error('Error getting token in Safari:', err);
+      }
+    } else {
+      alert('Notifications not allowed!');
+    }
+  };
+
+  const saveTokenToServer = (token) => {
+    fetch(`${API_URL}/api/auth/save-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${AUTH_TOKEN}`,
+      },
+      body: JSON.stringify({ token }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Token saved:', data);
+      })
+      .catch((error) => {
+        console.error('Error saving token:', error);
+      });
+  };
+
   const sendBroadcast = async () => {
     setSending(true);
     setStatus('');
     try {
       const res = await fetch(`${API_URL}/api/send-notification`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${AUTH_TOKEN}`,
         },
@@ -123,6 +132,14 @@ export default function HomePage() {
 
       <section style={{ margin: '2rem 0' }}>
         <h2>User Registration</h2>
+        {isSafari && (
+          <button
+            onClick={handleSafariPermission}
+            style={{ padding: '0.5rem 1rem', background: '#0070f3', color: '#fff', border: 'none', borderRadius: 4 }}
+          >
+            Enable Notifications (Safari)
+          </button>
+        )}
         <p>
           <strong>Your FCM Token:</strong>
         </p>
