@@ -1,3 +1,4 @@
+// pages/index.js
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -9,82 +10,60 @@ export default function HomePage() {
   const [incoming, setIncoming] = useState(null);
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState('');
-  const [permissionRequested, setPermissionRequested] = useState(false);
 
-  const AUTH_TOKEN = 'YOUR_AUTH_TOKEN'; // replace with your real token
+  const AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvYWRtaW4vbG9naW4iLCJpYXQiOjE3NDUzMTU2OTAsImV4cCI6MTc0NTQwMjA5MCwibmJmIjoxNzQ1MzE1NjkwLCJqdGkiOiJVOEI3emNkZ3dCTTRSVFc5Iiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.IGpW8SlxKekHvUHeyeA7bGRc-QguvCIBVSAi6VDqcgg";
 
-  const firebaseConfig = {
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-  };
-
+  // Initialize Firebase & Messaging
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    Notification.requestPermission();
+
+    const firebaseConfig = {
+      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+      measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+    };
 
     const app = initializeApp(firebaseConfig);
     const messaging = getMessaging(app);
 
-    // Foreground message handler
+    // Register SW, request permission & get token
+    navigator.serviceWorker
+      .register('/firebase-messaging-sw.js')
+      .then((registration) => {
+        Notification.requestPermission().then((perm) => {
+          if (perm === 'granted') {
+            getToken(messaging, {
+              vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY,
+              serviceWorkerRegistration: registration,
+            })
+              .then((token) => {
+                if (token) {
+                  setFcmToken(token);
+                  // send to backend
+                  fetch('https://efa3-119-82-104-94.ngrok-free.app/api/auth/save-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json',Authorization: `Bearer ${AUTH_TOKEN}`, },
+                    body: JSON.stringify({ token }),
+                  });
+                }
+              })
+              .catch(console.error);
+          }
+        });
+      })
+      .catch(console.error);
+
+    // Listen for foreground messages
     onMessage(messaging, (payload) => {
       setIncoming(payload.notification);
     });
-
-    // Optional: auto-check if permission already granted
-    if (Notification.permission === 'granted') {
-      registerServiceWorkerAndGetToken(messaging);
-    }
   }, []);
-
-  const registerServiceWorkerAndGetToken = async (messagingInstance) => {
-    try {
-      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-
-      const currentToken = await getToken(messagingInstance, {
-        vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY,
-        serviceWorkerRegistration: registration,
-      });
-
-      if (currentToken) {
-        setFcmToken(currentToken);
-        // Send token to backend
-        await fetch('https://efa3-119-82-104-94.ngrok-free.app/api/auth/save-token', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${AUTH_TOKEN}`,
-          },
-          body: JSON.stringify({ token: currentToken }),
-        });
-      } else {
-        console.log('No registration token available');
-      }
-    } catch (error) {
-      console.error('Token or registration error:', error);
-    }
-  };
-
-  const requestNotificationPermission = async () => {
-    if (!('Notification' in window)) {
-      alert('This browser does not support notifications.');
-      return;
-    }
-
-    setPermissionRequested(true);
-
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      const app = initializeApp(firebaseConfig);
-      const messaging = getMessaging(app);
-      await registerServiceWorkerAndGetToken(messaging);
-    } else {
-      alert('Notifications not allowed');
-    }
-  };
 
   const sendBroadcast = async () => {
     setSending(true);
@@ -112,31 +91,13 @@ export default function HomePage() {
 
   return (
     <div style={{ maxWidth: 600, margin: '2rem auto', fontFamily: 'sans-serif' }}>
-      <h1>🔥 Push Notification Demo</h1>
+      <h1>🔥 Push Demo (User & Admin)</h1>
 
       <section style={{ margin: '2rem 0' }}>
-        <h2>🔐 Notification Permission</h2>
-        {Notification.permission === 'granted' ? (
-          <p style={{ color: 'green' }}>Notifications allowed ✅</p>
-        ) : (
-          <button
-            onClick={requestNotificationPermission}
-            style={{
-              padding: '0.6rem 1rem',
-              background: '#0070f3',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 4,
-              cursor: 'pointer',
-            }}
-          >
-            Enable Notifications
-          </button>
-        )}
-      </section>
-
-      <section style={{ margin: '2rem 0' }}>
-        <h2>📲 FCM Token</h2>
+        <h2>User Registration</h2>
+        <p>
+          <strong>Your FCM Token:</strong>
+        </p>
         <textarea
           readOnly
           value={fcmToken}
@@ -146,7 +107,7 @@ export default function HomePage() {
       </section>
 
       <section style={{ margin: '2rem 0' }}>
-        <h2>📥 Incoming Notification</h2>
+        <h2>Incoming Notification</h2>
         {incoming ? (
           <div style={{ padding: '1rem', background: '#f0f0f0' }}>
             <p><strong>{incoming.title}</strong></p>
@@ -158,7 +119,7 @@ export default function HomePage() {
       </section>
 
       <section style={{ margin: '2rem 0' }}>
-        <h2>📡 Admin Broadcast</h2>
+        <h2>Admin Broadcast</h2>
         <button
           onClick={sendBroadcast}
           disabled={sending}
