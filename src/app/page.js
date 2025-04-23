@@ -1,4 +1,3 @@
-// pages/index.js
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -11,67 +10,94 @@ export default function HomePage() {
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState('');
 
-  const AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvYWRtaW4vbG9naW4iLCJpYXQiOjE3NDUzMTU2OTAsImV4cCI6MTc0NTQwMjA5MCwibmJmIjoxNzQ1MzE1NjkwLCJqdGkiOiJVOEI3emNkZ3dCTTRSVFc5Iiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.IGpW8SlxKekHvUHeyeA7bGRc-QguvCIBVSAi6VDqcgg";
+  // Your authorization token for API requests
+  const AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vMTI3LjAuMC4xOjgwMDAvYXBpL2F1dGgvYWRtaW4vbG9naW4iLCJpYXQiOjE3NDU0MDQzMDcsImV4cCI6MTc0NTQ5MDcwNywibmJmIjoxNzQ1NDA0MzA3LCJqdGkiOiJHRHdsUDJ5dHBydjQwZkhuIiwic3ViIjoiMSIsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjcifQ.Gu5-UJTqyg3Brh6C--d_IKJWzpGSgX5rjPBdJ2Gw7xc";  // Replace with your actual auth token
+  // Replace with your actual auth token
 
-  // Initialize Firebase & Messaging
+  const API_URL = "https://efa3-119-82-104-94.ngrok-free.app";  // Replace with your actual API URL
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    Notification.requestPermission();
+    // Detect if the browser is Safari
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-    const firebaseConfig = {
-      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-      measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-    };
+    if (isSafari) {
+      // Safari doesn't use service workers for Firebase push notifications
+      console.log('Safari detected. Custom push notification handling needed.');
+      // Handle Safari's push notifications manually, or use APNs directly
+    } else {
+      // For other browsers (Chrome, Firefox, etc.)
+      Notification.requestPermission();
 
-    const app = initializeApp(firebaseConfig);
-    const messaging = getMessaging(app);
+      const firebaseConfig = {
+        apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+        authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+        appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+        measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+      };
 
-    // Register SW, request permission & get token
-    navigator.serviceWorker
-      .register('/firebase-messaging-sw.js')
-      .then((registration) => {
-        Notification.requestPermission().then((perm) => {
-          if (perm === 'granted') {
-            getToken(messaging, {
-              vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY,
-              serviceWorkerRegistration: registration,
-            })
-              .then((token) => {
-                if (token) {
-                  setFcmToken(token);
-                  // send to backend
-                  fetch('https://efa3-119-82-104-94.ngrok-free.app/api/auth/save-token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json',Authorization: `Bearer ${AUTH_TOKEN}`, },
-                    body: JSON.stringify({ token }),
-                  });
-                }
+      const app = initializeApp(firebaseConfig);
+      const messaging = getMessaging(app);
+
+      // Register SW, request permission & get token
+      navigator.serviceWorker
+        .register('/firebase-messaging-sw.js')
+        .then((registration) => {
+          Notification.requestPermission().then((perm) => {
+            if (perm === 'granted') {
+              getToken(messaging, {
+                vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY,
+                serviceWorkerRegistration: registration,
               })
-              .catch(console.error);
-          }
-        });
-      })
-      .catch(console.error);
+                .then((token) => {
+                  if (token) {
+                    setFcmToken(token);
+                    // Send the token to the backend
+                    fetch(`${API_URL}/api/auth/save-token`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${AUTH_TOKEN}`,
+                      },
+                      body: JSON.stringify({ token }),
+                    })
+                      .then((response) => response.json())
+                      .then((data) => {
+                        console.log('Token saved:', data);
+                      })
+                      .catch((error) => {
+                        console.error('Error saving token:', error);
+                      });
+                  }
+                })
+                .catch(console.error);
+            }
+          });
+        })
+        .catch(console.error);
 
-    // Listen for foreground messages
-    onMessage(messaging, (payload) => {
-      setIncoming(payload.notification);
-    });
+      // Listen for foreground messages
+      onMessage(messaging, (payload) => {
+        setIncoming(payload.notification);
+      });
+    }
   }, []);
 
+  // Function to send a broadcast notification
   const sendBroadcast = async () => {
     setSending(true);
     setStatus('');
     try {
-      const res = await fetch('https://efa3-119-82-104-94.ngrok-free.app/api/send-notification', {
+      const res = await fetch(`${API_URL}/api/send-notification`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${AUTH_TOKEN}`,
+        },
         body: JSON.stringify({
           token: fcmToken,
           title: '🚀 Broadcast Message',
