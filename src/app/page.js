@@ -68,6 +68,8 @@ export default function HomePage() {
     const permission = await Notification.requestPermission();
     if (permission === 'granted') {
       try {
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
         const token = await getToken(messaging, {
           vapidKey: process.env.NEXT_PUBLIC_VAPID_KEY,
         });
