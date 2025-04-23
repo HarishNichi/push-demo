@@ -7,7 +7,7 @@ export default function HomePage2() {
 
   const sendNotification = async () => {
     try {
-      const res = await fetch("http://192.168.1.74:8000/api/line/broadcast", {
+      const res = await fetch("https://192.168.1.74:8000/api/line/broadcast", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

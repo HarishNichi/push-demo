@@ -44,7 +44,7 @@ export default function HomePage() {
                 if (token) {
                   setFcmToken(token);
                   // send to backend
-                  fetch('http://192.168.1.74:8000/api/auth/save-token', {
+                  fetch('https://192.168.1.74:8000/api/auth/save-token', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json',Authorization: `Bearer ${AUTH_TOKEN}`, },
                     body: JSON.stringify({ token }),
@@ -67,7 +67,7 @@ export default function HomePage() {
     setSending(true);
     setStatus('');
     try {
-      const res = await fetch('http://192.168.1.74:8000/api/send-notification', {
+      const res = await fetch('https://192.168.1.74:8000/api/send-notification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
