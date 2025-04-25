@@ -1,8 +1,6 @@
 "use client";
-// src/app/line/page.js
-"use client";
 import { useEffect, useState } from "react";
-import { useSearchParams }         from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function LineCallback() {
   const searchParams = useSearchParams();
@@ -10,7 +8,7 @@ export default function LineCallback() {
 
   useEffect(() => {
     const code = searchParams.getAll('code').pop();
-  const state = searchParams.getAll('state').pop();
+  // const state = searchParams.getAll('state').pop();
 
     if (!code) return;
 
