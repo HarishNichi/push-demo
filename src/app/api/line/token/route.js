@@ -31,7 +31,10 @@ export async function POST(req) {
     const tokenData = tokenRes.data;
     localStorage.setItem('lineToken', JSON.stringify(tokenData)); // Store token in local storage
 
-    console.log('Token Data:', tokenData);
+    return new Response(
+      JSON.stringify({ tokenData }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
 
     // 2) Fetch the user profile using the access token
     const profileRes = await axios.get(
