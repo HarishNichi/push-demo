@@ -12,7 +12,7 @@ export async function POST(req) {
       code,
       redirect_uri: process.env.NEXT_PUBLIC_LINE_CALLBACK_URL,
       client_id:    process.env.NEXT_PUBLIC_LINE_CHANNEL_ID,
-      client_secret:process.env.LINE_CHANNEL_SECRET,
+      client_secret:process.env.NEXT_PUBLIC_LINE_CALLBACK_URL,
     });
 
     // (Optional) disable cert checks locally
