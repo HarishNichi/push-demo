@@ -30,6 +30,8 @@ export async function POST(req) {
     );
     const tokenData = tokenRes.data;
 
+    console.log('Token Data:', tokenData);
+
     // 2) Fetch the user profile using the access token
     const profileRes = await axios.get(
       'https://api.line.me/v2/profile',
