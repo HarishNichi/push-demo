@@ -29,30 +29,30 @@ export async function POST(req) {
       }
     );
     const tokenData = tokenRes.data;
-    localStorage.setItem('lineToken', JSON.stringify(tokenData)); // Store token in local storage
+    // localStorage.setItem('lineToken', JSON.stringify(tokenData)); // Store token in local storage
 
     return new Response(
       JSON.stringify({ tokenData }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
 
-    // 2) Fetch the user profile using the access token
-    const profileRes = await axios.get(
-      'https://api.line.me/v2/profile',
-      {
-        headers: {
-          Authorization: `Bearer ${tokenData.access_token}`,
-        },
-        httpsAgent: agent,
-      }
-    );
-    const profile = profileRes.data;
+    // // 2) Fetch the user profile using the access token
+    // const profileRes = await axios.get(
+    //   'https://api.line.me/v2/profile',
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${tokenData.access_token}`,
+    //     },
+    //     httpsAgent: agent,
+    //   }
+    // );
+    // const profile = profileRes.data;
 
-    // 3) Return both token info and profile
-    return new Response(
-      JSON.stringify({ tokenData, profile }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
+    // // 3) Return both token info and profile
+    // return new Response(
+    //   JSON.stringify({ tokenData, profile }),
+    //   { status: 200, headers: { 'Content-Type': 'application/json' } }
+    // );
 
   } catch (err) {
     console.error('LINE Token/Profile Error:', err.response?.data || err.message);
