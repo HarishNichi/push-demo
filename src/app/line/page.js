@@ -1,27 +1,29 @@
-"use client";
-import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+'use client';
 
-function LineCallback() {
-  const searchParams = useSearchParams();
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+export default function LineCallback() {
+  const params = useSearchParams();
+  const code   = params.get('code');
   const [profile, setProfile] = useState(null);
+  const [tokenData, setTokenData] = useState(null);
 
   useEffect(() => {
-    const code = searchParams.getAll("code").pop();
     if (!code) return;
 
-    fetch("/api/line/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    fetch('/api/line/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code }),
     })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.profile) setProfile(data.profile);
-        else console.error(data);
-      })
-      .catch(console.error);
-  }, [searchParams]);
+    .then(res => res.json())
+    .then(({ tokenData, profile }) => {
+      setTokenData(tokenData);
+      setProfile(profile);
+    })
+    .catch(console.error);
+  }, [code]);
 
   if (!profile) return <p>Loading profile…</p>;
 
@@ -30,14 +32,9 @@ function LineCallback() {
       <h1>Welcome, {profile.displayName}</h1>
       <img src={profile.pictureUrl} alt="avatar" width={80} />
       <p>User ID: {profile.userId}</p>
+      <pre style={{ fontSize: '0.75rem' }}>
+        {JSON.stringify({ tokenData }, null, 2)}
+      </pre>
     </div>
-  );
-}
-
-export default function Page() {
-  return (
-    <Suspense fallback={<p>Loading...</p>}>
-      <LineCallback />
-    </Suspense>
   );
 }
