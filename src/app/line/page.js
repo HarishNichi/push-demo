@@ -1,13 +1,18 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function LineCallback() {
-  const params = useSearchParams();
-  const code   = params.get('code');
+  const [code, setCode] = useState(null);
   const [profile, setProfile] = useState(null);
   const [tokenData, setTokenData] = useState(null);
+
+  useEffect(() => {
+    // Extract the 'code' parameter from the URL
+    const searchParams = new URLSearchParams(window.location.search);
+    const codeParam = searchParams.get('code');
+    setCode(codeParam);
+  }, []);
 
   useEffect(() => {
     if (!code) return;
@@ -17,12 +22,12 @@ export default function LineCallback() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code }),
     })
-    .then(res => res.json())
-    .then(({ tokenData, profile }) => {
-      setTokenData(tokenData);
-      setProfile(profile);
-    })
-    .catch(console.error);
+      .then(res => res.json())
+      .then(({ tokenData, profile }) => {
+        setTokenData(tokenData);
+        setProfile(profile);
+      })
+      .catch(console.error);
   }, [code]);
 
   if (!profile) return <p>Loading profile…</p>;
