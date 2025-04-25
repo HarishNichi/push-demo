@@ -11,7 +11,7 @@ export async function POST(req) {
     params.append('code', code);
     params.append('redirect_uri', process.env.NEXT_PUBLIC_LINE_CALLBACK_URL);
     params.append('client_id', process.env.NEXT_PUBLIC_LINE_CHANNEL_ID);
-    params.append('client_secret', process.env.LINE_CHANNEL_SECRET);
+    params.append('client_secret', process.env.NEXT_PUBLIC_LINE_CHANNEL_SECRET);
 
     // Create an HTTPS agent that disables certificate validation
     const agent = new https.Agent({ rejectUnauthorized: false });
