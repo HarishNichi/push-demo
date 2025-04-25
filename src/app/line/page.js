@@ -1,15 +1,13 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function LineCallback() {
+function LineCallback() {
   const searchParams = useSearchParams();
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    const code = searchParams.getAll('code').pop();
-  // const state = searchParams.getAll('state').pop();
-
+    const code = searchParams.getAll("code").pop();
     if (!code) return;
 
     fetch("/api/line/token", {
@@ -17,13 +15,13 @@ export default function LineCallback() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ code }),
     })
-    .then(r => r.json())
-    .then(data => {
-      if (data.profile) setProfile(data.profile);
-      else console.error(data);
-    })
-    .catch(console.error);
-  }, []);
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.profile) setProfile(data.profile);
+        else console.error(data);
+      })
+      .catch(console.error);
+  }, [searchParams]);
 
   if (!profile) return <p>Loading profile…</p>;
 
@@ -36,3 +34,10 @@ export default function LineCallback() {
   );
 }
 
+export default function Page() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <LineCallback />
+    </Suspense>
+  );
+}
