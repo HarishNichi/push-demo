@@ -1,43 +1,40 @@
 "use client";
-import { useState } from "react";
+// src/app/line/page.js
+"use client";
+import { useEffect, useState } from "react";
+import { useSearchParams }         from "next/navigation";
 
-export default function HomePage2() {
-  const [message, setMessage] = useState("");
-  const [status, setStatus] = useState("");
+export default function LineCallback() {
+  const searchParams = useSearchParams();
+  const [profile, setProfile] = useState(null);
 
-  const sendNotification = async () => {
-    try {
-      const res = await fetch("https://efa3-119-82-104-94.ngrok-free.app/api/line/broadcast", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer YOUR_LARAVEL_JWT_TOKEN"
-        },
-        body: JSON.stringify({ message }),
-      });
+  useEffect(() => {
+    const code = searchParams.getAll('code').pop();
+  const state = searchParams.getAll('state').pop();
 
-      const data = await res.json();
-      setStatus(data.status ? "✅ Sent!" : "❌ Failed to send");
-    } catch (err) {
-      setStatus("❌ Error occurred");
-    }
-  };
+    if (!code) return;
+
+    fetch("/api/line/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code }),
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.profile) setProfile(data.profile);
+      else console.error(data);
+    })
+    .catch(console.error);
+  }, []);
+
+  if (!profile) return <p>Loading profile…</p>;
 
   return (
-    <div style={{ padding: 30 }}>
-      <h1>LINE Push Notification</h1>
-      <textarea
-        rows={4}
-        cols={50}
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Enter notification message"
-      />
-      <br />
-      <button onClick={sendNotification} style={{ marginTop: 10 }}>
-        Send Notification
-      </button>
-      <p>{status}</p>
+    <div>
+      <h1>Welcome, {profile.displayName}</h1>
+      <img src={profile.pictureUrl} alt="avatar" width={80} />
+      <p>User ID: {profile.userId}</p>
     </div>
   );
 }
+
