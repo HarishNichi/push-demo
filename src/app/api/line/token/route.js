@@ -1,4 +1,3 @@
-// src/app/api/line/token/route.js
 import axios from 'axios';
 import https from 'https';
 
@@ -8,11 +7,11 @@ export async function POST(req) {
 
     // 1) Exchange code for tokens
     const params = new URLSearchParams({
-      grant_type:   'authorization_code',
+      grant_type: 'authorization_code',
       code,
       redirect_uri: process.env.NEXT_PUBLIC_LINE_CALLBACK_URL,
-      client_id:    process.env.NEXT_PUBLIC_LINE_CHANNEL_ID,
-      client_secret:process.env.NEXT_PUBLIC_LINE_CHANNEL_SECRET,
+      client_id: process.env.NEXT_PUBLIC_LINE_CHANNEL_ID,
+      client_secret: process.env.NEXT_PUBLIC_LINE_CHANNEL_SECRET,
     });
 
     // (Optional) disable cert checks locally
@@ -30,11 +29,6 @@ export async function POST(req) {
     );
     const tokenData = tokenRes.data;
 
-    console.log('LINE Token Data:', tokenData);
-    // localStorage.setItem('lineToken', JSON.stringify(tokenData)); // Store token in local storage
-
-
-
     // 2) Fetch the user profile using the access token
     const profileRes = await axios.get(
       'https://api.line.me/v2/profile',
@@ -46,6 +40,38 @@ export async function POST(req) {
       }
     );
     const profile = profileRes.data;
+
+    // Now that the user has logged in and we have their userId, we can send a message
+    const sendMessage = async (userId) => {
+      const message = {
+        to: userId,  // The LINE user ID of the person
+        messages: [
+          {
+            type: 'text',
+            text: 'Hello, welcome to our service!',
+          },
+        ],
+      };
+
+      try {
+        const response = await axios.post(
+          'https://api.line.me/v2/bot/message/push',
+          message,
+          {
+            headers: {
+              'Authorization': `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}`,  // Your bot's access token
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        console.log('Message sent successfully:', response.data);
+      } catch (error) {
+        console.error('Error sending message:', error.response?.data || error.message);
+      }
+    };
+
+    // Send message to the user
+    await sendMessage(profile.userId);
 
     // 3) Return both token info and profile
     return new Response(
