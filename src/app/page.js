@@ -212,10 +212,12 @@ export default function Home() {
     const redirectUri = encodeURIComponent(process.env.NEXT_PUBLIC_LINE_CALLBACK_URL);
     const clientId = process.env.NEXT_PUBLIC_LINE_CHANNEL_ID;
 
-    const lineLoginUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${process.env.NEXT_PUBLIC_LINE_CHANNEL_ID}&redirect_uri=${process.env.NEXT_PUBLIC_LINE_CALLBACK_URL}&state=abc123&scope=profile%20openid&bot_prompt=normal`;
+    // const lineLoginUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${process.env.NEXT_PUBLIC_LINE_CHANNEL_ID}&redirect_uri=${process.env.NEXT_PUBLIC_LINE_CALLBACK_URL}&state=abc123&scope=profile%20openid&bot_prompt=normal`;
+    const loginUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${process.env.NEXT_PUBLIC_LINE_CHANNEL_ID}&redirect_uri=${process.env.NEXT_PUBLIC_LINE_CALLBACK_URL}&state=random123&bot_prompt=normal&scope=profile%20openid`;
 
 
-    window.location.href = lineLoginUrl;
+
+    window.location.href = loginUrl;
   };
 
   return (
