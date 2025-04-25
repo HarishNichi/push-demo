@@ -212,7 +212,8 @@ export default function Home() {
     const redirectUri = encodeURIComponent(process.env.NEXT_PUBLIC_LINE_CALLBACK_URL);
     const clientId = process.env.NEXT_PUBLIC_LINE_CHANNEL_ID;
 
-    const lineLoginUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=profile%20openid&nonce=${nonce}`;
+    const lineLoginUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${process.env.NEXT_PUBLIC_LINE_CHANNEL_ID}&redirect_uri=${process.env.NEXT_PUBLIC_LINE_CALLBACK_URL}&state=abc123&scope=profile%20openid&bot_prompt=normal`;
+
 
     window.location.href = lineLoginUrl;
   };
