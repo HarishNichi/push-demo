@@ -49,7 +49,7 @@ export default function LineCallback() {
           Scan the QR code below to add me as a friend on LINE and start receiving notifications.
         </p>
         <img
-          src="https://qr-official.line.me/L/@349fkpgg.png" // Replace with your LINE QR code URL
+          src="https://qr-official.line.me/gs/M_349fkpgg_GW.png" // Replace with your LINE QR code URL
           alt="Add Me on LINE QR Code"
           style={styles.qrCode}
         />
