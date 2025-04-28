@@ -46,16 +46,13 @@ export default function LineCallback() {
       <div style={styles.addFriendSection}>
         <h2 style={styles.addFriendHeading}>Add Me as a Friend</h2>
         <p style={styles.addFriendText}>
-          Click the button below to add me as a friend on LINE and start receiving notifications.
+          Scan the QR code below to add me as a friend on LINE and start receiving notifications.
         </p>
-        <a
-          href="https://line.me/R/ti/p/@349fkpgg"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={styles.addFriendButton}
-        >
-          Add Me on LINE
-        </a>
+        <img
+          src="https://qr-official.line.me/L/349fkpgg.png" // Replace with your LINE QR code URL
+          alt="Add Me on LINE QR Code"
+          style={styles.qrCode}
+        />
       </div>
     </div>
   );
@@ -126,17 +123,11 @@ const styles = {
     marginBottom: '1rem',
     color: '#555',
   },
-  addFriendButton: {
-    display: 'inline-block',
-    padding: '0.75rem 1.5rem',
-    fontSize: '1rem',
-    backgroundColor: '#00c300', // LINE green color
-    color: '#fff',
-    textDecoration: 'none',
-    borderRadius: '4px',
-    transition: 'background-color 0.3s ease',
-  },
-  addFriendButtonHover: {
-    backgroundColor: '#009a00', // Darker green for hover
+  qrCode: {
+    width: '200px',
+    height: '200px',
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    objectFit: 'contain',
   },
 };
