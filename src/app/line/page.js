@@ -71,6 +71,9 @@ const styles = {
     minHeight: '100vh',
   },
   profileSection: {
+    display: 'flex', // Flexbox for centering content
+    flexDirection: 'column',
+    alignItems: 'center', // Center content horizontally
     textAlign: 'center',
     padding: '1.5rem',
     border: '1px solid #ddd',
@@ -104,6 +107,9 @@ const styles = {
     marginTop: '2rem',
   },
   addFriendSection: {
+    display: 'flex', // Flexbox for centering content
+    flexDirection: 'column',
+    alignItems: 'center', // Center content horizontally
     textAlign: 'center',
     padding: '1.5rem',
     border: '1px solid #ddd',
