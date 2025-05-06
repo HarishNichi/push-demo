@@ -16,13 +16,18 @@ export default function LineCallback() {
   useEffect(() => {
     if (!code) return;
 
-    fetch('/api/line/token', {
+    fetch('https://api.hinanjo.nichi.in/api/line/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code }),
     })
-      .then((res) => res.json())
+      .then((res) => 
+      {       console.log('Response:', res)
+        res.json()
+      }
+    )
       .then(({ profile }) => {
+         console.log('Profile:', profile);
         setProfile(profile);
       })
       .catch(console.error);
