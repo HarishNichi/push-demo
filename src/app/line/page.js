@@ -22,9 +22,7 @@ export default function LineCallback() {
       body: JSON.stringify({ code }),
     })
       .then((res) => 
-      {       console.log('Response:', res)
         res.json()
-      }
     )
       .then(({ profile }) => {
          console.log('Profile:', profile);
