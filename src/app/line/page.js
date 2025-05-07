@@ -19,7 +19,7 @@ export default function LineCallback() {
     fetch('https://api.hinanjo.nichi.in/api/line/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code }),
+      body: JSON.stringify({ code: codeParam, client_id: process.env.NEXT_PUBLIC_LINE_CHANNEL_ID, redirect_uri: process.env.NEXT_PUBLIC_LINE_CALLBACK_URL,client_secret: process.env.NEXT_PUBLIC_LINE_CHANNEL_SECRET }),
     })
       .then((res) => 
         res.json()
