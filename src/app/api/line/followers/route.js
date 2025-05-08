@@ -1,6 +1,10 @@
-// /pages/api/followers.js
+// /pages/api/line/followers.js
 
 export default async function handler(req, res) {
+    if (req.method !== 'GET') {
+      return res.status(405).json({ error: 'Method Not Allowed' });
+    }
+  
     try {
       const response = await fetch('https://api.line.me/v2/bot/followers/ids?limit=1000', {
         method: 'GET',
