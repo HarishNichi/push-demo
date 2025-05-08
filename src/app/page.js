@@ -29,6 +29,11 @@ export default function Home() {
   };
 
   useEffect(() => {
+      getCode();
+  }
+  , []);
+
+  useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const app = initializeApp(firebaseConfig);
@@ -114,6 +119,25 @@ export default function Home() {
 
     window.location.href = loginUrl;
   };
+
+    const getCode = async () => {
+      try {
+        const res = await fetch(`/api/line/followers`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+    
+        if (!res.ok) {
+          throw new Error(`Error: ${res.status} ${res.statusText}`);
+        }
+    
+        const data = await res.json();
+        console.log('Followers data:', data);
+        return data;
+      } catch (error) {
+        console.error('Error fetching followers:', error);
+      }
+    };
 
   return (
     <div style={styles.container}>
