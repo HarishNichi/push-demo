@@ -122,7 +122,7 @@ export default function Home() {
 
   const getCode = async () => {
     try {
-      const res = await fetch(`/api/line/followers`);
+      const res = await fetch(`https://push-demo-gamma.vercel.app/api/line/followers?start=yANU9IA...`);
   
       if (!res.ok) {
         throw new Error(`Error: ${res.status} ${res.statusText}`);

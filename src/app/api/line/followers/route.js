@@ -1,12 +1,13 @@
-// /pages/api/line/followers.js
-
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
       return res.status(405).json({ error: 'Method Not Allowed' });
     }
   
+    // Get the start parameter from the query
+    const start = req.query.start ? `&start=${req.query.start}` : '';
+  
     try {
-      const response = await fetch('https://api.line.me/v2/bot/followers/ids?limit=1000', {
+      const response = await fetch(`https://api.line.me/v2/bot/followers/ids?limit=1000${start}`, {
         method: 'GET',
         headers: {
           'Authorization': 'Bearer 20907b573e90541b8cbb864488ce847a',
