@@ -7,7 +7,7 @@ export async function GET(req) {
       const response = await fetch(`https://api.line.me/v2/bot/followers/ids?limit=1000${start}`, {
         method: 'GET',
         headers: {
-          'Authorization': 'Bearer 20907b573e90541b8cbb864488ce847a',
+          'Authorization': 'Bearer f4OaU6J5m9H2Rwkmme7jMqJsRJ9+GlTfAqC+qR93Y7k2IAh+I+JbZEaE8gPQ1YLTF5hrMoqP4mmulONKphRKyjIGjjPnY+NCPGzjSRNBM3+rpYgyTdrPA9uBr9hHafFguNWM5oeJyqhHWiSLfxTE5AdB04t89/1O/w1cDnyilFU=',
         },
       });
   
