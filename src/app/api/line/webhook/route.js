@@ -2,18 +2,17 @@
 
 export async function POST(req) {
   try {
-    const body = await req.json();
+    const body = await req.json();  // Receive the webhook data
 
     for (const event of body.events) {
       if (event.type === 'follow') {
-        const userId = event.source.userId;
-        console.log('🟢 New user followed us:', userId);
+        const userId = event.source.userId;  // Extract userId from the webhook data
+        console.log('🟢 New user followed us:', userId);  // Log the userId
 
-        // Optionally, you can save or do other logic with the userId
+        // Optionally, you can save the userId to your database or return it in the response
 
-        // You can then send the userId to your frontend or return it as part of the response
         return new Response(
-          JSON.stringify({ userId }), 
+          JSON.stringify({ userId }),  // Send back the userId in the response
           { status: 200, headers: { 'Content-Type': 'application/json' } }
         );
       }

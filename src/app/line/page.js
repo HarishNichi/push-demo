@@ -39,7 +39,18 @@ const fetchUserId = async () => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ events: [] }),  // A mock payload just to trigger the webhook handler
+           body: JSON.stringify({
+          // You can simulate sending webhook data if needed
+          // The backend doesn't need this in a real scenario since LINE sends the data automatically
+          events: [
+            {
+              type: 'follow',
+              source: {
+                userId: 'U3d3edab4f36c6292e6d8a8131f141b8b',  // This is just an example
+              },
+            },
+          ],
+        }),  // A mock payload just to trigger the webhook handler
     });
 
     if (response.ok) {
