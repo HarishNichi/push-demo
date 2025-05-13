@@ -31,13 +31,24 @@ export default function LineCallback() {
       .catch(console.error);
   }, [code]);
 
-  const fetchUserId = async () => {
+const fetchUserId = async () => {
   try {
-    const response = await fetch('/api/line/webhook');
-    const data = await response.json();
-    
-    console.log('User ID:', data.userId);
-    // Do something with the userId, like mapping it to an address or other data
+    // POST request to your webhook handler (even though it's not really a webhook call from the frontend, you just want to trigger it)
+    const response = await fetch('/api/line-webhook', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ events: [] }),  // A mock payload just to trigger the webhook handler
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('User ID:', data.userId);  // Output the userId returned from the backend
+      // Now you can do whatever you want with the userId, such as mapping it to an address
+    } else {
+      console.error('Failed to fetch userId');
+    }
   } catch (error) {
     console.error('Error fetching userId:', error);
   }
@@ -70,7 +81,22 @@ export default function LineCallback() {
           style={styles.qrCode}
         />
       </div>
-        <button onClick={fetchUserId}>Check User ID</button>
+       <button 
+  onClick={fetchUserId} 
+  style={{
+    padding: '10px 20px', 
+    backgroundColor: '#007bff', 
+    color: '#fff', 
+    border: 'none', 
+    borderRadius: '5px', 
+    fontSize: '16px', 
+    cursor: 'pointer', 
+    transition: 'background-color 0.3s ease',
+  }}
+>
+  Check User ID
+</button>
+
     </div>
   );
 }
