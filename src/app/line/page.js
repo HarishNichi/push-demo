@@ -33,7 +33,7 @@ export default function LineCallback() {
 
   const fetchUserId = async () => {
   try {
-    const response = await fetch('/api/line-webhook');
+    const response = await fetch('/api/line/webhook');
     const data = await response.json();
     
     console.log('User ID:', data.userId);
