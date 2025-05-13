@@ -31,6 +31,19 @@ export default function LineCallback() {
       .catch(console.error);
   }, [code]);
 
+  const fetchUserId = async () => {
+  try {
+    const response = await fetch('/api/line-webhook');
+    const data = await response.json();
+    
+    console.log('User ID:', data.userId);
+    // Do something with the userId, like mapping it to an address or other data
+  } catch (error) {
+    console.error('Error fetching userId:', error);
+  }
+};
+
+
   if (!profile) return <p style={styles.loading}>Loading profile…</p>;
 
   return (
@@ -57,6 +70,7 @@ export default function LineCallback() {
           style={styles.qrCode}
         />
       </div>
+        <button onClick={fetchUserId}>Check User ID</button>
     </div>
   );
 }
